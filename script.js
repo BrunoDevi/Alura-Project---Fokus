@@ -18,7 +18,12 @@ for(let i = 0; i < btnLista.length; i++){
         segundoTexto.textContent = bannerText2[i];
         
         contador = atualizarMaxTime(i) //Atualiza o tempo Maximodo modo o mostra na tela
-        displayTime()
+        displayTime();
+        if(temporizador){ // Executa ao Pausar
+            zerar();
+            startPause.innerHTML = `<img class="app__card-primary-butto-icon" src="/imagens/play_arrow.png" alt=""/> <span id="start-pause__text">Começar</span>`;
+            pauseSound.play();
+        }
     })
 
     btnLista[i].addEventListener('focus', () => { //Aplica efeito focus
