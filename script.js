@@ -57,12 +57,17 @@ const pauseSound = new Audio('/sons/pause.mp3');
 const alarmSound = new Audio ('/sons/beep.mp3');
 const telaDeTempo = document.querySelector('#timer');
 let temporizador = null;
-let contador = 1500;
+let contador = 5;
 
 startPause.addEventListener('click', start); // Executa função Start ao clicar
 
 const contagemRegresiva = ()=>{
     if(contador <= 0){ // Executa ao final da contagem
+        const focoAtivo = html.getAttribute('data-contexto') == 'foco';
+        if(focoAtivo){
+            const evento = new CustomEvent('focoFinalizado');
+            document.dispatchEvent(evento);
+        }
         alarmSound.play();
         zerar();
         displayTime()
