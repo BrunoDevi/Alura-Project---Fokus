@@ -13,8 +13,34 @@ const taskDestaque = document.querySelector('.app__section-active-task-descripti
 let taskSelected = null;
 let liTaskSelected = null;
 
+btnAddTask.addEventListener('click', cancelarTask);
+btnCancelar.addEventListener('click', cancelarTask);
+
+btnDelAll.addEventListener('click', () => {
+    // debugger
+    localStorage.clear();
+    taskList.innerHTML = '';
+    taskTextCampo.textContent = '';
+    taskSelected = null;
+    liTaskSelected = null;
+    atualizarTask()
+})
+
 function atualizarTask(){ // Cria ou Adiciona a task atual no localStorag
     localStorage.setItem('tarefas', JSON.stringify(taskContainer));
+}
+
+function taskCompleta(task){
+    let completedCheck = task.classList.contains('app__section-task-list-item-complete');
+    task.classList.toggle('app__section-task-list-item-complete');
+    
+    if(completedCheck){
+        task.querySelector('button').disabled = false;
+    } else {
+        task.querySelector('button').disabled = true;
+        task.classList.remove('app__section-task-list-item-active');
+    }
+
 }
 
 function criarElementoTask(task){
@@ -55,7 +81,7 @@ function criarElementoTask(task){
     }
     
     checkBtn.onclick = ()=>{
-        li.classList.toggle('app__section-task-list-item-complete');
+        taskCompleta(li);
     }
 
     li.onclick = () => {
@@ -80,7 +106,7 @@ function criarElementoTask(task){
     return li 
 }
 
-function cancelarTask(){
+function cancelarTask(){ 
     taskForm.classList.toggle('hidden');
     taskTextCampo.value = '';
 }
@@ -93,34 +119,20 @@ taskForm.addEventListener('submit', (evento)=>{
     }
     taskContainer.push(task); //adiciona a task no array 'taskContainer'
     taskList.append(criarElementoTask(task)); //Gera o elemento da Task com a função e adiciona a task na seção de lista de tarefas
-    atualizarTask();
+    atualizarTask(task);
     
     // esconde e reseta o elemento 'formulario'
     taskForm.classList.add('hidden');
     taskTextCampo.value = '';
 })
 
-btnAddTask.addEventListener('click', cancelarTask);
-btnCancelar.addEventListener('click', cancelarTask);
-
-
-// btnDelAll.addEventListener('click', () => {
-//     taskContainer.forEach(tarefa => {
-//         localStorage.clear();
-//         taskList.innerHTML = '';
-//         location.reload();
-//     })
-// })
-
 taskContainer.forEach(tarefa => { //Executa ao acessar a pagina e add as task's salvas no localStorage na lista de tarefas
     taskList.append(criarElementoTask(tarefa))
 });
 
-document.addEventListener('focoFinalizado', () => {
+document.addEventListener('focoFinalizado', () => { // Auto-Completa a task em foco ao final do cronometro
     if(taskSelected && liTaskSelected){
-        liTaskSelected.classList.remove('app__section-task-list-item-active');
-        liTaskSelected.classList.add('app__section-task-list-item-complete');
-        liTaskSelected.querySelector('button').setAttribute('disabled', '');
+        taskCompleta(liTaskSelected);
         taskDestaque.textContent = '';
     }
 })
