@@ -16,29 +16,48 @@ let liTaskSelected = null;
 btnAddTask.addEventListener('click', cancelarTask);
 btnCancelar.addEventListener('click', cancelarTask);
 
+btnDelCompleted.addEventListener('click', () => {
+    const seletor = '.app__section-task-list-item-complete'
+    document.querySelectorAll(seletor).forEach(element => {
+        element.remove()
+    });
+    
+    if (taskContainer) { //filtra do LS os items que tem o 'completed: false' e atualiza o LS
+        let updatedList = taskContainer.filter((item) => {
+          return item.completed === false;
+        });
+    
+        localStorage.setItem('tarefas', JSON.stringify(updatedList));
+    }
+})
+
 btnDelAll.addEventListener('click', () => {
-    // debugger
-    localStorage.clear();
     taskList.innerHTML = '';
-    taskTextCampo.textContent = '';
-    taskSelected = null;
-    liTaskSelected = null;
-    atualizarTask()
+    taskDestaque.textContent = '';
+    localStorage.clear();
+    location.reload();
 })
 
 function atualizarTask(){ // Cria ou Adiciona a task atual no localStorag
     localStorage.setItem('tarefas', JSON.stringify(taskContainer));
 }
 
-function taskCompleta(task){
-    let completedCheck = task.classList.contains('app__section-task-list-item-complete');
-    task.classList.toggle('app__section-task-list-item-complete');
+function taskCompleta(taskLi, taskObject){
+    let completedCheck = taskLi.classList.contains('app__section-task-list-item-complete'); 
+    taskLi.classList.toggle('app__section-task-list-item-complete');
+
+    if(taskObject.completed == true){
+        taskObject.completed = false;
+    } else {
+        taskObject.completed = true;
+    }
+    atualizarTask();
     
     if(completedCheck){
-        task.querySelector('button').disabled = false;
+        taskLi.querySelector('button').disabled = false;
     } else {
-        task.querySelector('button').disabled = true;
-        task.classList.remove('app__section-task-list-item-active');
+        taskLi.querySelector('button').disabled = true;
+        taskLi.classList.remove('app__section-task-list-item-active');
     }
 
 }
@@ -81,7 +100,7 @@ function criarElementoTask(task){
     }
     
     checkBtn.onclick = ()=>{
-        taskCompleta(li);
+        taskCompleta(li, task);
     }
 
     li.onclick = () => {
@@ -115,11 +134,12 @@ taskForm.addEventListener('submit', (evento)=>{
     evento.preventDefault(); //Tira efeito de re-load do botão 'confirm'
     
     const task = { 
-        descrição: taskTextCampo.value
+        descrição: taskTextCampo.value,
+        completed: false
     }
     taskContainer.push(task); //adiciona a task no array 'taskContainer'
     taskList.append(criarElementoTask(task)); //Gera o elemento da Task com a função e adiciona a task na seção de lista de tarefas
-    atualizarTask(task);
+    atualizarTask();
     
     // esconde e reseta o elemento 'formulario'
     taskForm.classList.add('hidden');
@@ -127,12 +147,24 @@ taskForm.addEventListener('submit', (evento)=>{
 })
 
 taskContainer.forEach(tarefa => { //Executa ao acessar a pagina e add as task's salvas no localStorage na lista de tarefas
-    taskList.append(criarElementoTask(tarefa))
+    // Guarda a referência do primeiro filho
+    var primeiroFilho = taskList.firstChild;
+    // Cria um novo elemento
+    var novoElemento = criarElementoTask(tarefa);
+
+    if(tarefa.completed == true){
+        novoElemento.querySelector('button').disabled = true;
+        novoElemento.classList.add('app__section-task-list-item-complete');
+    }
+
+    // Insere o novo elemento antes do primeiro filho
+    taskList.insertBefore(novoElemento, primeiroFilho);
+
 });
 
 document.addEventListener('focoFinalizado', () => { // Auto-Completa a task em foco ao final do cronometro
     if(taskSelected && liTaskSelected){
-        taskCompleta(liTaskSelected);
+        taskCompleta(liTaskSelected, taskSelected);
         taskDestaque.textContent = '';
     }
 })
